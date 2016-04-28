@@ -13,7 +13,7 @@ class MongoCollectionFactory {
 
     def coll = db.getCollection(collName)
 
-    def find() =  {
+    def find() = {
       coll.find(Filters.ne("_id", 1))
     }
 

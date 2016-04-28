@@ -18,8 +18,8 @@ package rxStreams
 
 import java.util.concurrent.atomic.AtomicBoolean
 
-import org.mongodb.{scala => mongoDB}
-import org.{reactivestreams => rxStreams}
+import org.mongodb.{ scala => mongoDB }
+import org.{ reactivestreams => rxStreams }
 
 import scala.language.implicitConversions
 
