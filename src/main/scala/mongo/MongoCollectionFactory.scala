@@ -1,6 +1,7 @@
 package mongo
 
 import com.google.inject.Singleton
+import com.mongodb.CursorType
 import com.mongodb.client.model.Filters
 import org.mongodb.scala.MongoDatabase
 import play.api.libs.json.{JsObject, Json}
@@ -15,7 +16,10 @@ class MongoCollectionFactory {
     def coll = db.getCollection(collName)
 
     def find() = {
-      coll.find(Filters.ne("_id", 1)).map { doc =>
+      coll.find()
+//        .cursorType(CursorType.TailableAwait) //tailable cursor requires capped(fixed size) buffer collections
+//        .noCursorTimeout(true)
+        .map { doc =>
         Json.parse(doc.toJson()).as[JsObject]
       }
     }

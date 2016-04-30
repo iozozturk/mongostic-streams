@@ -1,6 +1,7 @@
 package stream
 
-import akka.actor.ActorSystem
+import actor.IndexerActor
+import akka.actor.{ActorSystem, Props}
 import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods._
@@ -12,15 +13,16 @@ import org.mongodb.scala.Observable
 import play.api.libs.json.JsObject
 import rxStreams.Implicits._
 
-object MongoToElasticsearch extends App {
+object Main extends App {
 
-  implicit val system = ActorSystem("Sys")
+  implicit val system = ActorSystem("MongosticSystem")
   implicit val materializer = ActorMaterializer()
+
+  system.actorOf(Props[IndexerActor], "elastic-actor")
 
   import system.dispatcher
 
-  val coll = new MongoCollectionFactory().makeCollection("galleries")
-
+  val coll = new MongoCollectionFactory().makeCollection("faq")
   val find: Observable[JsObject] = coll.find()
 
   def index = Flow[JsObject].map { doc =>
