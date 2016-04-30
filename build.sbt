@@ -1,5 +1,3 @@
-import scalariform.formatter.preferences._
-
 name := "mongostic-streams"
 
 version := "1.1"
@@ -14,13 +12,5 @@ libraryDependencies ++= Seq(
   "com.google.inject" % "guice" % "4.0",
   "com.typesafe.play" %% "play-json" % "2.5.2"
 )
-
-scalariformSettings
-
-ScalariformKeys.preferences := ScalariformKeys.preferences.value
-  .setPreference(AlignSingleLineCaseStatements, true)
-  .setPreference(AlignSingleLineCaseStatements.MaxArrowIndent, 100)
-  .setPreference(DoubleIndentClassDeclaration, true)
-  .setPreference(PreserveDanglingCloseParenthesis, true)
 
 fork in run := true

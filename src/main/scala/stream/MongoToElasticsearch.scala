@@ -1,41 +1,42 @@
 package stream
 
 import akka.actor.ActorSystem
+import akka.event.Logging
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpMethods._
 import akka.http.scaladsl.model.HttpRequest
-import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Flow, Source}
+import akka.stream.scaladsl.{Flow, Sink, Source}
+import akka.stream.{ActorMaterializer, Attributes}
 import mongo.MongoCollectionFactory
-import org.mongodb.scala.{Document, FindObservable}
-import play.api.libs.json.{JsObject, Json}
+import org.mongodb.scala.Observable
+import play.api.libs.json.JsObject
 import rxStreams.Implicits._
 
 object MongoToElasticsearch extends App {
 
   implicit val system = ActorSystem("Sys")
+  implicit val materializer = ActorMaterializer()
 
   import system.dispatcher
 
-  implicit val materializer = ActorMaterializer()
-
   val coll = new MongoCollectionFactory().makeCollection("galleries")
 
-  val find: FindObservable[Document] = coll.find()
+  val find: Observable[JsObject] = coll.find()
 
   def index = Flow[JsObject].map { doc =>
-    println(s"Indexing $doc")
     Http().singleRequest(HttpRequest(POST, "http://localhost:9200/rightnow/faq", entity = doc.toString()))
   }
 
-  def toJson = Flow[Document].map{ doc=>
-    Json.parse(doc.toJson()).as[JsObject] - "_id"
+  def massage = Flow[JsObject].map { doc =>
+    doc - "_id"
   }
 
   Source.fromPublisher(find)
-    .via(toJson)
+    .via(massage)
+    .log("indexing-document")
+    .withAttributes(Attributes.logLevels(onElement = Logging.WarningLevel))
     .via(index)
-    .runForeach(d => println(s"Indexed Document: \n $d"))
+    .runWith(Sink.ignore)
     .onComplete(_ => println("Indexing complete"))
 
 }
